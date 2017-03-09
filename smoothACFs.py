@@ -8,6 +8,7 @@ import scipy
 from scipy.signal import argrelextrema
 from scipy.optimize import curve_fit
 from scipy.fftpack import fft
+from math import log,log10
 
 parser = argparse.ArgumentParser(description="Smooth MD derived ACFs for spectral density predictions.",
                                  epilog="smoothACFS is analyse_freenrg is distributed under the GPL. For more information please visit ",
@@ -63,7 +64,7 @@ if __name__ == '__main__':
     region2max = 0.3
     region2min = 0.05
     timestep = 5.0 # in ps
-    tinf = 81920 # ps gives 16384 data points
+    tinf = 163840 # ps gives 32768 data points
     for ACFidx in rawACFS.keys():
         # 1) Find interval where C(t) value decays from 0.3 to 0.05
         ACF = np.array(rawACFS[ACFidx])
@@ -117,21 +118,24 @@ if __name__ == '__main__':
         # see https://docs.scipy.org/doc/scipy-0.18.1/reference/tutorial/fftpack.html
         J = fft(np.array(smoothACF))
         # Scale result
-        # FIXME: So we have 1/5 for isotropic tumbling
         # But Robustelli et al. have http://pubs.acs.org/doi/full/10.1021/ct400654r
         # J(w) = (2/5) Re [ \int C(t) exp (-iwt) dt ]
-        # 2 comes from pi ?
         scale = 2/5.
         Jscl = []
         for x in range(0,len(J)):
             Jx = J[x]
             Jsclx = scale*Jx
             Jscl.append(Jsclx)
+        Jscl = np.array(Jscl)
         stream = open('spectraldensity-%s.dat' % ACFidx,'w')
-        for x in range(0,len(Jscl)):
+        N = len(Jscl)
+        T = 1/timestep
+        ws = np.linspace(0.0,1.0/(2.0*T),N/2)
+        for x in range(1,int(len(Jscl)/2)):
             # must check what w is exactly
-            #w = (float(x)/tinf)
+            w = log10(ws[x])
             val = Jscl[x]
-            stream.write("%8.2f %e\n" % (x,val))
+            #print (w,val)
+            stream.write("%e %e\n" % (w,val))
         stream.close()
-        sys.exit(-1)
+        #sys.exit(-1)
