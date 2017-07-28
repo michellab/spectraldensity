@@ -60,7 +60,7 @@ if __name__ == '__main__':
     timestep = 5.0 # in ps
     tinf = 163840 # ps gives 32768 data points
     tmin = 50000.0
-    tol = 0.05
+    tol = 0.10
     for ACFidx in rawACFS.keys():
         t = 0.0
         c = 0
@@ -76,7 +76,7 @@ if __name__ == '__main__':
         S2 /= c
         
         if ( abs(S2-last) > tol):
-            print ("%s 0.0 #NOT CONVERGED!" % ACFidx)
+            print ("%s 0.1 #NOT CONVERGED!" % ACFidx)
         else:
             print ("%s %8.5f" % (ACFidx,S2))
         #sys.exit(-1)
